@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
   res.send('Backend is alive 🧠');
 });
 
-app.post('/start-checkout', async (req, res) => {
+app.post('/start-renewal', async (req, res) => {
   try {
     const { id,amount} = req.body;
     const sheetResp = await axios.get(`${GOOGLE_SCRIPT_URL}?id=${encodeURIComponent(id)}`, {
@@ -23,7 +23,7 @@ app.post('/start-checkout', async (req, res) => {
     });
     
     const sheetData = sheetResp.data || {};
-    if (sheetData.error) return res.status(404).json({ error: "ID not found in sheet" });
+    if (sheetData.error) return res.status(404).json({ error: "ID doesn't exist. Please check Your Id and try again. " });
     const phone ="+20"+sheetData.phone;
     const email = sheetData.email;
     const billing_data = {
@@ -40,16 +40,16 @@ app.post('/start-checkout', async (req, res) => {
     "country": "EG",
     "last_name": "Renewal",
     "state": "NA"}
-    console.log(billing_data);
-const intentionPayload = {
+
+  const intentionPayload = {
   amount,
   currency: "EGP",
   payment_methods: ["card",parseInt(process.env.PAYMOB_INTEGRATION_ID)],
   billing_data,
   items: [],
-  redirection_url: "https://omar-habibb.github.io/optimum-auto/thankyou.html",
-  notification_url: "https://webhook.site/your-temporary-test-url"
-};
+  redirection_url: "https://omar-habibb.github.io/optimum-auto/renthankyou.html",
+  notification_url: "https://omar-habibb.github.io/optimum-auto/reasnt.html"
+  }
 
 
     const response = await axios.post(
@@ -97,5 +97,5 @@ const intentionPayload = {
 // This line is very important for Railway
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 Server running`);
 });
