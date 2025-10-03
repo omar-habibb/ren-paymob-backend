@@ -7,6 +7,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+function isSafeInput(value) {
+  if (typeof value !== 'string') return true;
+  const v = value.trim();
+  if (/^[=+\-@]/.test(v)) return false;   // starts with =, +, -, @
+  if (/<\s*script/i.test(v)) return false; // contains <script>
+  return true;
+}
+
 
 const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SCRIPT_URL;
 
@@ -18,6 +26,13 @@ app.get('/', (req, res) => {
 app.post('/start-renewal', async (req, res) => {
   try {
     const { id,amount} = req.body;
+
+    if (!isSafeInput(id)) {
+  console.warn(`⚠️ Blocked suspicious ID input: ${id}`);
+  return res.status(200).json({ success: true, message: "ok" });
+}
+
+    
     const sheetResp = await axios.get(`${GOOGLE_SCRIPT_URL}?id=${encodeURIComponent(id)}`, {
       headers: { "Accept": "application/json" }
     });
@@ -99,3 +114,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running`);
 });
+
